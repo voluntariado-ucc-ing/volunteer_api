@@ -50,7 +50,7 @@ func GetVolunteerById(id int64) (*volunteer.Volunteer, apierrors.ApiError) {
 	res := q.QueryRow(id)
 	err = res.Scan(&vol.Id, &vol.FirstName, &vol.LastName, &vol.Dni, &vol.Email, &vol.Type)
 	if err != nil {
-		return nil, apierrors.NewInternalServerApiError("Error scaning last insert id", err)
+		return nil, apierrors.NewNotFoundApiError("Database query error")
 	}
 	return &vol, nil
 }
