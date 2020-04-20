@@ -1,6 +1,7 @@
 package volunteer_service
 
 import (
+	volunteerSql "volutarios_api/clients/postgresql"
 	"volutarios_api/domain/apierrors"
 	"volutarios_api/domain/volunteer"
 )
@@ -23,22 +24,33 @@ func init() {
 }
 
 func (v volunteerService) CreateVolunteer(volunteer volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
-	// TODO: Implement!
-	return nil, nil
+	id, err := volunteerSql.InsertVolunteer(volunteer)
+	if err != nil {
+		return nil, err
+	}
+	volunteer.Id = id
+	return &volunteer, nil
 }
 
 func (v volunteerService) GetVolunteer(id int64) (*volunteer.Volunteer, apierrors.ApiError) {
-	// TODO: Implement!
-	return nil, nil
+	vol, err := volunteerSql.GetVolunteerById(id)
+	if err != nil {
+		return nil, err
+	}
+	return vol, nil
 }
 
 func (v volunteerService) UpdateVolunteer(volunteer volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
-	// TODO: Implement!
+	if err := volunteerSql.UpdateVolunteer(volunteer); err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
 func (v volunteerService) DeleteVolunteer(volunteer volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
-	// TODO: Implement!
+	if err := volunteerSql.DeleteVolunteer(volunteer); err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
