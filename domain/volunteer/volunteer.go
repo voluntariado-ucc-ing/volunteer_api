@@ -8,9 +8,10 @@ type Volunteer struct {
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
 	Dni       int64  `json:"dni"`
+	Type      string `json:"volunteer_type"`
 }
 
-func(v *Volunteer) ValidateMail() apierrors.ApiError {
+func (v *Volunteer) ValidateMail() apierrors.ApiError {
 	// TODO: Implement!
 	return nil
 }
