@@ -11,10 +11,10 @@ import (
 var dbClient *sql.DB
 
 const (
-	queryInsert = "INSERT INTO test_volunteer.volunteer (first_name, last_name, email, dni, volunteer_type) VALUES ($1,$2,$3,$4,$5) RETURNING volunteer_id"
-	queryGet    = "SELECT v.volunteer_id, v.first_name, v.last_name, v.dni, v.email, v.volunteer_type, v.status FROM test_volunteer.volunteer v WHERE v.volunteer_id=$1 "
-	queryUpdate = "UPDATE test_volunteer.volunteer v SET first_name=$1, last_name=$2, email=$3, dni=$4, volunteer_type=$5, status=$6 WHERE v.volunteer_id=$7"
-	queryDelete = "UPDATE test_volunteer.volunteer v SET status=$1 WHERE v.volunteer_id=$2"
+	queryInsert = "INSERT INTO test_volunteer.volunteers (first_name, last_name, email, dni) VALUES ($1,$2,$3,$4) RETURNING volunteer_id"
+	queryGet    = "SELECT v.volunteer_id, v.first_name, v.last_name, v.dni, v.email, v.status FROM test_volunteer.volunteers v WHERE v.volunteer_id=$1 "
+	queryUpdate = "UPDATE test_volunteer.volunteers v SET first_name=$1, last_name=$2, email=$3, dni=$4,status=$5 WHERE v.volunteer_id=$6"
+	queryDelete = "UPDATE test_volunteer.volunteers v SET status=$1 WHERE v.volunteer_id=$2"
 )
 
 func init() {
@@ -35,7 +35,7 @@ func InsertVolunteer(vol *volunteer.Volunteer) (int64, apierrors.ApiError) {
 	if err != nil {
 		return 0, apierrors.NewInternalServerApiError("Error preparing insert statement", err)
 	}
-	res := q.QueryRow(vol.FirstName, vol.LastName, vol.Email, vol.Dni, vol.Type)
+	res := q.QueryRow(vol.FirstName, vol.LastName, vol.Email, vol.Dni)
 	err = res.Scan(&id)
 	if err != nil {
 		return 0, apierrors.NewInternalServerApiError("Error scaning last insert id for create", err)
@@ -50,7 +50,7 @@ func GetVolunteerById(id int64) (*volunteer.Volunteer, apierrors.ApiError) {
 		return nil, apierrors.NewInternalServerApiError("Error preparing get statement", err)
 	}
 	res := q.QueryRow(id)
-	err = res.Scan(&vol.Id, &vol.FirstName, &vol.LastName, &vol.Dni, &vol.Email, &vol.Type, &vol.Status)
+	err = res.Scan(&vol.Id, &vol.FirstName, &vol.LastName, &vol.Dni, &vol.Email, &vol.Status)
 	if err != nil {
 		return nil, apierrors.NewNotFoundApiError("Database query error for get")
 	}
@@ -58,7 +58,7 @@ func GetVolunteerById(id int64) (*volunteer.Volunteer, apierrors.ApiError) {
 }
 
 func UpdateVolunteer(vol *volunteer.Volunteer) apierrors.ApiError {
-	if _, err := dbClient.Exec(queryUpdate, vol.FirstName, vol.LastName, vol.Email, vol.Dni, vol.Type, vol.Status, vol.Id); err != nil{
+	if _, err := dbClient.Exec(queryUpdate, vol.FirstName, vol.LastName, vol.Email, vol.Dni, vol.Status, vol.Id); err != nil{
 		return apierrors.NewInternalServerApiError("Error database query response for update", err)
 	}
 	return nil

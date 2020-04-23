@@ -12,7 +12,6 @@ type Volunteer struct {
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
 	Dni       int64  `json:"dni"`
-	Type      string `json:"volunteer_type"`
 	Status    string `json:"status,omitempty"`
 }
 
@@ -24,9 +23,6 @@ func (v *Volunteer) ValidateMail() apierrors.ApiError {
 func (v *Volunteer) UpdateFields(newVol Volunteer) {
 	if newVol.Status != "" {
 		v.Status = newVol.Status
-	}
-	if newVol.Type != "" {
-		v.Type = newVol.Type
 	}
 	if newVol.Email != "" {
 		v.Email = newVol.Email
