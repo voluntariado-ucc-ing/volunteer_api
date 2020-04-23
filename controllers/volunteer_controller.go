@@ -30,7 +30,7 @@ func (v *volunteerController) Create(c *gin.Context) {
 		return
 	}
 
-	res, err := volunteer_service.VolunteerService.CreateVolunteer(volunteerRequest)
+	res, err := volunteer_service.VolunteerService.CreateVolunteer(&volunteerRequest)
 	if err != nil {
 		c.JSON(err.Status(), err)
 		return
@@ -55,11 +55,38 @@ func (v *volunteerController) Get(c *gin.Context) {
 }
 
 func (v *volunteerController) Update(c *gin.Context) {
-	// TODO: Implement!
-	c.JSON(http.StatusOK, map[string]string{"status": "updated"})
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		badR := apierrors.NewBadRequestApiError("Error parsing parameter")
+		c.JSON(badR.Status(), badR)
+		return
+	}
+	var updateRequest volunteer.Volunteer
+	if err := c.ShouldBindJSON(&updateRequest); err != nil {
+		apiErr := apierrors.NewBadRequestApiError("Error invalid JSON")
+		c.JSON(http.StatusBadRequest, apiErr)
+		return
+	}
+	updateRequest.Id = id
+	res, serErr := volunteer_service.VolunteerService.UpdateVolunteer(&updateRequest)
+	if serErr != nil {
+		c.JSON(serErr.Status(), serErr)
+		return
+	}
+	c.JSON(http.StatusOK, res)
 }
 
 func (v *volunteerController) Delete(c *gin.Context) {
-	// TODO: Implement!
-	c.JSON(http.StatusOK, map[string]string{"status": "deleted"})
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		badR := apierrors.NewBadRequestApiError("Error parsing parameter")
+		c.JSON(badR.Status(), badR)
+		return
+	}
+	delErr := volunteer_service.VolunteerService.DeleteVolunteer(id)
+	if delErr != nil {
+		c.JSON(delErr.Status(), delErr)
+		return
+	}
+	c.JSON(http.StatusOK, map[string]string{"status":"deleted"})
 }

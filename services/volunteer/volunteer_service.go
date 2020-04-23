@@ -9,10 +9,10 @@ import (
 type volunteerService struct{}
 
 type volunteerServiceInterface interface {
-	CreateVolunteer(volunteer volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError)
+	CreateVolunteer(volunteer *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError)
 	GetVolunteer(id int64) (*volunteer.Volunteer, apierrors.ApiError)
-	UpdateVolunteer(volunteer volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError)
-	DeleteVolunteer(volunteer volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError)
+	UpdateVolunteer(volunteer *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError)
+	DeleteVolunteer(id int64) apierrors.ApiError
 }
 
 var (
@@ -23,13 +23,13 @@ func init() {
 	VolunteerService = &volunteerService{}
 }
 
-func (v volunteerService) CreateVolunteer(volunteer volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
+func (v volunteerService) CreateVolunteer(volunteer *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
 	id, err := volunteerSql.InsertVolunteer(volunteer)
 	if err != nil {
 		return nil, err
 	}
 	volunteer.Id = id
-	return &volunteer, nil
+	return volunteer, nil
 }
 
 func (v volunteerService) GetVolunteer(id int64) (*volunteer.Volunteer, apierrors.ApiError) {
@@ -40,18 +40,21 @@ func (v volunteerService) GetVolunteer(id int64) (*volunteer.Volunteer, apierror
 	return vol, nil
 }
 
-func (v volunteerService) UpdateVolunteer(volunteer volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
-	if err := volunteerSql.UpdateVolunteer(volunteer); err != nil {
+func (v volunteerService) UpdateVolunteer(updateRequest *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
+	current, err := volunteerSql.GetVolunteerById(updateRequest.Id)
+	if err != nil {
 		return nil, err
 	}
-	return nil, nil
-}
-
-func (v volunteerService) DeleteVolunteer(volunteer volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
-	if err := volunteerSql.DeleteVolunteer(volunteer); err != nil {
+	current.UpdateFields(*updateRequest)
+	if err := volunteerSql.UpdateVolunteer(current); err != nil {
 		return nil, err
 	}
-	return nil, nil
+	return current, nil
 }
 
-
+func (v volunteerService) DeleteVolunteer(id int64) apierrors.ApiError {
+	if err := volunteerSql.DeleteVolunteer(id); err != nil {
+		return err
+	}
+	return nil
+}
