@@ -1,9 +1,13 @@
 package volunteer_service
 
 import (
+	"fmt"
+	"math/rand"
+	"time"
 	volunteerSql "volutarios_api/clients/postgresql"
 	"volutarios_api/domain/apierrors"
 	"volutarios_api/domain/volunteer"
+	"volutarios_api/providers"
 )
 
 type volunteerService struct{}
@@ -20,6 +24,7 @@ var (
 )
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	VolunteerService = &volunteerService{}
 }
 
@@ -29,6 +34,11 @@ func (v volunteerService) CreateVolunteer(volunteer *volunteer.Volunteer) (*volu
 		return nil, err
 	}
 	volunteer.Id = id
+	password := rand.Uint64()
+	err = providers.SendMail(volunteer.Email, fmt.Sprintf("%d", password))
+	if err != nil {
+		return nil, err
+	}
 	return volunteer, nil
 }
 

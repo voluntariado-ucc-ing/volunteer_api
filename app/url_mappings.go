@@ -7,6 +7,7 @@ func mapUrls(){
 	router.GET("/volunteer/get/:id", controllers.VolunteerController.Get)
 
 	router.POST("/volunteer/create", controllers.VolunteerController.Create)
+	router.POST("/volunteer/import", controllers.VolunteerController.ImportCsv)
 
 	router.PUT("/volunteer/update/:id", controllers.VolunteerController.Update)
 

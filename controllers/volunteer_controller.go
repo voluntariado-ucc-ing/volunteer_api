@@ -1,9 +1,13 @@
 package controllers
 
 import (
+	"encoding/csv"
 	"github.com/gin-gonic/gin"
+	"io"
+	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"volutarios_api/domain/apierrors"
 	"volutarios_api/domain/volunteer"
 	volunteer_service "volutarios_api/services/volunteer"
@@ -18,6 +22,7 @@ type volunteerControllerInterface interface {
 	Get(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
+	ImportCsv(c *gin.Context)
 }
 
 type volunteerController struct{}
@@ -88,5 +93,59 @@ func (v *volunteerController) Delete(c *gin.Context) {
 		c.JSON(delErr.Status(), delErr)
 		return
 	}
-	c.JSON(http.StatusOK, map[string]string{"status":"deleted"})
+	c.JSON(http.StatusOK, map[string]string{"status": "deleted"})
+}
+
+func (v *volunteerController) ImportCsv(c *gin.Context) {
+	f, err := c.FormFile("file")
+	if err != nil {
+		badR := apierrors.NewBadRequestApiError("Error parsing file parameter")
+		c.JSON(badR.Status(), badR)
+		return
+	}
+
+	file, err := f.Open()
+	if err != nil {
+		internal := apierrors.NewInternalServerApiError("Error opening input file", err)
+		c.JSON(internal.Status(), internal)
+		return
+	}
+
+	r := csv.NewReader(file)
+
+	var newVolunteers []volunteer.Volunteer
+
+	for {
+		// Read each record from csv
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		//[0] Mail
+		//[1] DNI
+		dni, err := strconv.ParseInt(strings.TrimSpace(record[1]), 10, 64)
+		if err != nil {
+			badR := apierrors.NewBadRequestApiError("Error parsing file data")
+			c.JSON(badR.Status(), badR)
+			return
+		}
+		v := volunteer.Volunteer{
+			Email: strings.TrimSpace(record[0]),
+			Dni:   dni,
+		}
+		newVolunteers = append(newVolunteers, v)
+	}
+
+	for _, newVolunteer := range newVolunteers {
+		_, err := volunteer_service.VolunteerService.CreateVolunteer(&newVolunteer)
+		if err != nil {
+			internal := apierrors.NewInternalServerApiError("Error creating user from file", err)
+			c.JSON(internal.Status(), internal)
+			return
+		}
+	}
+	c.JSON(http.StatusOK, map[string]string{"status": "created"})
 }
