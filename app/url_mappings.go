@@ -1,6 +1,6 @@
 package app
 
-import "volutarios_api/controllers"
+import "github.com/voluntariado-ucc-ing/volunteer_api/controllers"
 
 func mapUrls(){
 	router.GET("/ping", controllers.PingController.Ping)

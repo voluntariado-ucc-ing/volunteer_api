@@ -1,6 +1,6 @@
 package volunteer
 
-import "volutarios_api/domain/apierrors"
+import "github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
 
 const (
 	StatusDeleted = "deleted"

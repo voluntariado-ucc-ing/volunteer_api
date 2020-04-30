@@ -1,6 +1,6 @@
 package main
 
-import "volutarios_api/app"
+import "github.com/voluntariado-ucc-ing/volunteer_api/app"
 
 func main() {
 	app.StartApp()

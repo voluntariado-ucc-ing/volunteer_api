@@ -1,6 +1,6 @@
 FROM golang:1.14
 
-WORKDIR /go/src/voluntarios_api
+WORKDIR /go/src/github.com/voluntariado-ucc-ing/voluntarios_api/
 COPY . .
 
 RUN go get -d -v ./...

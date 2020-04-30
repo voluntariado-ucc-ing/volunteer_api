@@ -2,12 +2,12 @@ package volunteer_service
 
 import (
 	"fmt"
+	volunteerSql "github.com/voluntariado-ucc-ing/volunteer_api/clients/postgresql"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
+	"github.com/voluntariado-ucc-ing/volunteer_api/providers"
 	"math/rand"
 	"time"
-	volunteerSql "volutarios_api/clients/postgresql"
-	"volutarios_api/domain/apierrors"
-	"volutarios_api/domain/volunteer"
-	"volutarios_api/providers"
 )
 
 type volunteerService struct{}

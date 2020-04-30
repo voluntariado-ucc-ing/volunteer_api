@@ -3,9 +3,9 @@ package volunteerSql
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
 	"log"
-	"volutarios_api/domain/apierrors"
-	"volutarios_api/domain/volunteer"
 )
 
 var dbClient *sql.DB

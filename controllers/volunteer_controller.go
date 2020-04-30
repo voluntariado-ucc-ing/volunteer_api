@@ -3,14 +3,14 @@ package controllers
 import (
 	"encoding/csv"
 	"github.com/gin-gonic/gin"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
+	volunteer_service "github.com/voluntariado-ucc-ing/volunteer_api/services/volunteer"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
-	"volutarios_api/domain/apierrors"
-	"volutarios_api/domain/volunteer"
-	volunteerservice "volutarios_api/services/volunteer"
 )
 
 var (
@@ -35,7 +35,7 @@ func (v *volunteerController) Create(c *gin.Context) {
 		return
 	}
 
-	res, err := volunteerservice.VolunteerService.CreateVolunteer(&volunteerRequest)
+	res, err := volunteer_service.VolunteerService.CreateVolunteer(&volunteerRequest)
 	if err != nil {
 		c.JSON(err.Status(), err)
 		return
@@ -51,7 +51,7 @@ func (v *volunteerController) Get(c *gin.Context) {
 		c.JSON(badR.Status(), badR)
 		return
 	}
-	res, serErr := volunteerservice.VolunteerService.GetVolunteer(id)
+	res, serErr := volunteer_service.VolunteerService.GetVolunteer(id)
 	if serErr != nil {
 		c.JSON(serErr.Status(), serErr)
 		return
@@ -73,7 +73,7 @@ func (v *volunteerController) Update(c *gin.Context) {
 		return
 	}
 	updateRequest.Id = id
-	res, serErr := volunteerservice.VolunteerService.UpdateVolunteer(&updateRequest)
+	res, serErr := volunteer_service.VolunteerService.UpdateVolunteer(&updateRequest)
 	if serErr != nil {
 		c.JSON(serErr.Status(), serErr)
 		return
@@ -88,7 +88,7 @@ func (v *volunteerController) Delete(c *gin.Context) {
 		c.JSON(badR.Status(), badR)
 		return
 	}
-	delErr := volunteerservice.VolunteerService.DeleteVolunteer(id)
+	delErr := volunteer_service.VolunteerService.DeleteVolunteer(id)
 	if delErr != nil {
 		c.JSON(delErr.Status(), delErr)
 		return
@@ -140,7 +140,7 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 	}
 
 	for _, newVolunteer := range newVolunteers {
-		_, err := volunteerservice.VolunteerService.CreateVolunteer(&newVolunteer)
+		_, err := volunteer_service.VolunteerService.CreateVolunteer(&newVolunteer)
 		if err != nil {
 			internal := apierrors.NewInternalServerApiError("Error creating user from file", err)
 			c.JSON(internal.Status(), internal)

@@ -2,9 +2,9 @@ package providers
 
 import (
 	"fmt"
+	"github.com/voluntariado-ucc-ing/volunteer_api/config"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
 	"net/smtp"
-	"volutarios_api/config"
-	"volutarios_api/domain/apierrors"
 )
 
 var auth smtp.Auth
