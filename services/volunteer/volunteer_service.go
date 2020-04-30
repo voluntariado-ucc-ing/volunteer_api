@@ -2,7 +2,7 @@ package volunteer_service
 
 import (
 	"fmt"
-	volunteerSql "github.com/voluntariado-ucc-ing/volunteer_api/clients/postgresql"
+	"github.com/voluntariado-ucc-ing/volunteer_api/clients"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
 	"github.com/voluntariado-ucc-ing/volunteer_api/providers"
@@ -29,7 +29,7 @@ func init() {
 }
 
 func (v volunteerService) CreateVolunteer(volunteer *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
-	id, err := volunteerSql.InsertVolunteer(volunteer)
+	id, err := clients.InsertVolunteer(volunteer)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (v volunteerService) CreateVolunteer(volunteer *volunteer.Volunteer) (*volu
 }
 
 func (v volunteerService) GetVolunteer(id int64) (*volunteer.Volunteer, apierrors.ApiError) {
-	vol, err := volunteerSql.GetVolunteerById(id)
+	vol, err := clients.GetVolunteerById(id)
 	if err != nil {
 		return nil, err
 	}
@@ -51,19 +51,19 @@ func (v volunteerService) GetVolunteer(id int64) (*volunteer.Volunteer, apierror
 }
 
 func (v volunteerService) UpdateVolunteer(updateRequest *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
-	current, err := volunteerSql.GetVolunteerById(updateRequest.Id)
+	current, err := clients.GetVolunteerById(updateRequest.Id)
 	if err != nil {
 		return nil, err
 	}
 	current.UpdateFields(*updateRequest)
-	if err := volunteerSql.UpdateVolunteer(current); err != nil {
+	if err := clients.UpdateVolunteer(current); err != nil {
 		return nil, err
 	}
 	return current, nil
 }
 
 func (v volunteerService) DeleteVolunteer(id int64) apierrors.ApiError {
-	if err := volunteerSql.DeleteVolunteer(id); err != nil {
+	if err := clients.DeleteVolunteer(id); err != nil {
 		return err
 	}
 	return nil

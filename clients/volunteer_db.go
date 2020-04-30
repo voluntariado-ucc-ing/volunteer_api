@@ -1,4 +1,4 @@
-package volunteerSql
+package clients
 
 import (
 	"database/sql"
