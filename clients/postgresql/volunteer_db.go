@@ -11,15 +11,15 @@ import (
 var dbClient *sql.DB
 
 const (
-	queryInsert = "INSERT INTO test_volunteer.volunteers (first_name, last_name, email, dni) VALUES ($1,$2,$3,$4) RETURNING volunteer_id"
+	queryInsert = "INSERT INTO voluntariado_ing.volunteers (first_name, last_name, email, dni) VALUES ($1,$2,$3,$4) RETURNING volunteer_id"
 	queryGet    = "SELECT v.volunteer_id, v.first_name, v.last_name, v.dni, v.email, v.status FROM test_volunteer.volunteers v WHERE v.volunteer_id=$1 "
-	queryUpdate = "UPDATE test_volunteer.volunteers v SET first_name=$1, last_name=$2, email=$3, dni=$4,status=$5 WHERE v.volunteer_id=$6"
-	queryDelete = "UPDATE test_volunteer.volunteers v SET status=$1 WHERE v.volunteer_id=$2"
+	queryUpdate = "UPDATE voluntariado_ing.volunteers v SET first_name=$1, last_name=$2, email=$3, dni=$4,status=$5 WHERE v.volunteer_id=$6"
+	queryDelete = "UPDATE voluntariado_ing.volunteers v SET status=$1 WHERE v.volunteer_id=$2"
 )
 
 func init() {
 	var err error
-	connStr := "dbname=test_volunteer sslmode=disable"
+	connStr := "dbname=voluntariado_ing sslmode=disable"
 	dbClient, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)

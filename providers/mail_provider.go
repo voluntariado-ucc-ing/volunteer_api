@@ -11,12 +11,12 @@ var auth smtp.Auth
 
 func init() {
 	mail, pass := config.GetMailCredentials()
-	auth = smtp.PlainAuth("", mail, pass, "smtp.gmail.com")
+	auth = smtp.PlainAuth("", mail, pass, config.SmtpHost)
 }
 
 func SendMail(emailAddress string, password string) apierrors.ApiError {
 	err := smtp.SendMail(
-		"smtp.gmail.com:587",
+		config.SmtpAddress,
 		auth,
 		"noreply@voluntariadoing.org",
 		[]string{emailAddress},
