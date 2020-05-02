@@ -1,31 +1,29 @@
 package volunteer
 
-import "github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
+import "database/sql"
 
 const (
 	StatusDeleted = "deleted"
 )
 
 type Volunteer struct {
-	Id        int64  `json:"volunteer_id,omitempty"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Dni       int64  `json:"dni"`
-	Status    string `json:"status,omitempty"`
-}
-
-func (v *Volunteer) ValidateMail() apierrors.ApiError {
-	// TODO: Implement!
-	return nil
+	Id                 int64         `json:"volunteer_id,omitempty"`
+	FirstName          string        `json:"first_name"`
+	LastName           string        `json:"last_name"`
+	Username           string        `json:"username"`
+	DocumentId         int64         `json:"document_id"`
+	Status             int32         `json:"status"`
+	StatusId           sql.NullInt32 `json:"-"`
+	VolunteerDetails   Details       `json:"details"`
+	VolunteerProfileId sql.NullInt64 `json:"-"`
 }
 
 func (v *Volunteer) UpdateFields(newVol Volunteer) {
-	if newVol.Status != "" {
+	if newVol.Status != 0 {
 		v.Status = newVol.Status
 	}
-	if newVol.Email != "" {
-		v.Email = newVol.Email
+	if newVol.Username != "" {
+		v.Username = newVol.Username
 	}
 	if newVol.FirstName != "" {
 		v.FirstName = newVol.FirstName
@@ -33,7 +31,8 @@ func (v *Volunteer) UpdateFields(newVol Volunteer) {
 	if newVol.LastName != "" {
 		v.LastName = newVol.LastName
 	}
-	if newVol.Dni != 0 {
-		v.Dni = newVol.Dni
+	if newVol.DocumentId != 0 {
+		v.DocumentId = newVol.DocumentId
 	}
+	v.VolunteerDetails.UpdateDetails(newVol.VolunteerDetails)
 }

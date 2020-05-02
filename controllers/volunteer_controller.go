@@ -23,6 +23,8 @@ type volunteerControllerInterface interface {
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
 	ImportCsv(c *gin.Context)
+	GetByUsername(c *gin.Context)
+	GetAllVolunteers(c *gin.Context)
 }
 
 type volunteerController struct{}
@@ -133,8 +135,8 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 			return
 		}
 		v := volunteer.Volunteer{
-			Email: strings.TrimSpace(record[0]),
-			Dni:   dni,
+			Username:   strings.TrimSpace(record[0]),
+			DocumentId: dni,
 		}
 		newVolunteers = append(newVolunteers, v)
 	}
@@ -149,3 +151,25 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, map[string]string{"status": "created"})
 }
+
+func (v *volunteerController) GetByUsername(c *gin.Context) {
+	username := c.Query("username")
+	res, err := volunteerservice.VolunteerService.GetVolunteerByUsername(username)
+	if err != nil {
+		c.JSON(err.Status(), err)
+		return
+	}
+	c.JSON(http.StatusOK, res)
+	return
+}
+
+func (v *volunteerController) GetAllVolunteers(c *gin.Context) {
+	res, err := volunteerservice.VolunteerService.GetAllVolunteers()
+	if err != nil {
+		c.JSON(err.Status(), err)
+		return
+	}
+	c.JSON(http.StatusOK, res)
+	return
+}
+
