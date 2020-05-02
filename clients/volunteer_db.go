@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"github.com/voluntariado-ucc-ing/volunteer_api/config"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/direction"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
@@ -26,11 +27,17 @@ const (
 
 func init() {
 	var err error
-	connStr := "dbname=voluntariado_ing sslmode=disable"
+	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s",
+		config.GetDatabaseHost(),
+		config.GetDatabaseUser(),
+		config.GetDatabasePassword(),
+		config.GetDatabaseName())
+
 	dbClient, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	if err := dbClient.Ping(); err != nil {
 		log.Fatal(err)
 	}
