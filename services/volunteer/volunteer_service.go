@@ -75,11 +75,17 @@ func (v volunteerService) UpdateVolunteer(updateRequest *volunteer.Volunteer) (*
 		}
 		// Assign details id to user and insert after
 		current.VolunteerDetails.DetailsId = detId
+		if err := clients.UpdateVolunteerTable(current); err != nil {
+			return nil, err
+		}
+		return current, nil
+	} else {
+		// TODO update volunteer
+		// TODO update details
+		// TODO update directions
+
+		return current, nil
 	}
-	if err := clients.UpdateVolunteerTable(current); err != nil {
-		return nil, err
-	}
-	return current, nil
 }
 
 func (v volunteerService) GetAllVolunteers() ([]volunteer.Volunteer, apierrors.ApiError) {
