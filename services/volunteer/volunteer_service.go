@@ -78,14 +78,28 @@ func (v volunteerService) UpdateVolunteer(updateRequest *volunteer.Volunteer) (*
 		if err := clients.UpdateVolunteerTable(current); err != nil {
 			return nil, err
 		}
-		return current, nil
 	} else {
-		// TODO update volunteer
-		// TODO update details
-		// TODO update directions
+		current.VolunteerDetails.DetailsId = current.VolunteerProfileId.Int64
 
-		return current, nil
+		if err := clients.UpdateVolunteerTableHavingProfileId(current); err != nil {
+			return nil, err
+		}
+
+		if err := clients.UpdateVolunteerDetailsTable(&current.VolunteerDetails); err != nil {
+			return nil, err
+		}
+
+		directionId, err := clients.GetDirectionIdByProfileId(current.VolunteerDetails.DetailsId)
+		if err != nil {
+			return nil, err
+		}
+
+		current.VolunteerDetails.Direction.DirectionId = directionId
+		if err := clients.UpdateDirectionTable(&current.VolunteerDetails.Direction); err != nil {
+			return nil, err
+		}
 	}
+	return current, nil
 }
 
 func (v volunteerService) GetAllVolunteers() ([]volunteer.Volunteer, apierrors.ApiError) {

@@ -21,7 +21,11 @@ const (
 	queryInsertDetails           = "INSERT INTO voluntariado_ing.volunteer_details (contact_mail, phone_number, photo_url, birth_date, has_car, direction_id, university, career, career_year, works, career_condition) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING volunteer_details_id"
 	queryGetById                 = "SELECT v.volunteer_id, v.first_name, v.last_name, v.document_id, v.username, v.status, v.profile_id FROM voluntariado_ing.volunteers v WHERE v.volunteer_id=$1 "
 	queryGetByUsername           = "SELECT v.volunteer_id FROM voluntariado_ing.volunteers v WHERE v.username=$1 "
+	queryGetDirectionId          = "SELECT v.direction_id FROM voluntariado_ing.volunteer_details v WHERE v.volunteer_details_id=$1"
 	queryUpdate                  = "UPDATE voluntariado_ing.volunteers v SET first_name=$1, last_name=$2, username=$3, document_id=$4,status=$5,profile_id=$6 WHERE v.volunteer_id=$7"
+	queryUpdateHavingProfile     = "UPDATE voluntariado_ing.volunteers v SET first_name=$1, last_name=$2, username=$3, document_id=$4,status=$5 WHERE v.volunteer_id=$6"
+	queryUpdateDetails           = "UPDATE voluntariado_ing.volunteer_details v SET contact_mail=$1, phone_number=$2, photo_url=$3, has_car=$4, university=$5, career=$6, career_year=$7, career_condition=$8, works=$9 WHERE v.volunteer_details_id=$10"
+	queryUpdateDirections        = "UPDATE voluntariado_ing.directions d SET street=$1, number=$2, details=$3, city=$4, postal_code=$5 WHERE d.direction_id=$6"
 	queryDelete                  = "UPDATE voluntariado_ing.volunteers v SET status=$1 WHERE v.volunteer_id=$2"
 )
 
@@ -67,6 +71,20 @@ func InsertVolunteerDetails(det volunteer.Details) (int64, apierrors.ApiError) {
 	err = res.Scan(&id)
 	if err != nil {
 		return 0, apierrors.NewInternalServerApiError("Error scaning last insert id for create details", err)
+	}
+	return id, nil
+}
+
+func GetDirectionIdByProfileId(detailsId int64) (int64, apierrors.ApiError) {
+	var id int64
+	q, err := dbClient.Prepare(queryGetDirectionId)
+	if err != nil {
+		return 0, apierrors.NewInternalServerApiError("error preparing get direction id statement", err)
+	}
+	res := q.QueryRow(detailsId)
+	err = res.Scan(&id)
+	if err != nil {
+		return 0, apierrors.NewNotFoundApiError("direction not found")
 	}
 	return id, nil
 }
@@ -153,6 +171,27 @@ func GetAllVolunteerIds() ([]int64, apierrors.ApiError) {
 func UpdateVolunteerTable(vol *volunteer.Volunteer) apierrors.ApiError {
 	if _, err := dbClient.Exec(queryUpdate, vol.FirstName, vol.LastName, vol.Username, vol.DocumentId, vol.Status, vol.VolunteerDetails.DetailsId, vol.Id); err != nil {
 		return apierrors.NewInternalServerApiError("Error database query response for update", err)
+	}
+	return nil
+}
+
+func UpdateVolunteerTableHavingProfileId(vol *volunteer.Volunteer) apierrors.ApiError {
+	if _, err := dbClient.Exec(queryUpdateHavingProfile, vol.FirstName, vol.LastName, vol.Username, vol.DocumentId, vol.Status, vol.Id); err != nil {
+		return apierrors.NewInternalServerApiError("Error database query response for update", err)
+	}
+	return nil
+}
+
+func UpdateVolunteerDetailsTable(det *volunteer.Details) apierrors.ApiError {
+	if _, err := dbClient.Exec(queryUpdateDetails, det.ContactMail, det.PhoneNumber, det.PhotoUrl, det.HasCar, det.University, det.Career, det.CareerYear, det.CareerCondition, det.Works, det.DetailsId); err != nil {
+		return apierrors.NewInternalServerApiError("Error database query response for update details", err)
+	}
+	return nil
+}
+
+func UpdateDirectionTable(dir *direction.Direction) apierrors.ApiError {
+	if _, err := dbClient.Exec(queryUpdateDirections, dir.Street, dir.Number, dir.Details, dir.City, dir.PostalCode, dir.DirectionId); err != nil {
+		return apierrors.NewInternalServerApiError("Error database query response for update details", err)
 	}
 	return nil
 }
