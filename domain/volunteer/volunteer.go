@@ -16,6 +16,7 @@ type Volunteer struct {
 	StatusId           sql.NullInt32 `json:"-"`
 	VolunteerDetails   Details       `json:"details"`
 	VolunteerProfileId sql.NullInt64 `json:"-"`
+	Password           string        `json:"-"`
 }
 
 func (v *Volunteer) UpdateFields(newVol Volunteer) {

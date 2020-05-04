@@ -12,8 +12,11 @@ func mapUrls(){
 
 	router.POST("/volunteer/create", controllers.VolunteerController.Create)
 	router.POST("/volunteer/import", controllers.VolunteerController.ImportCsv)
+	router.POST("/volunteer/auth", controllers.VolunteerController.AuthVolunteer)
+
 
 	router.PUT("/volunteer/update/:id", controllers.VolunteerController.Update)
+	router.PUT("/volunteer/auth/update", controllers.VolunteerController.UpdatePassword)
 
 	router.DELETE("/volunteer/delete/:id", controllers.VolunteerController.Delete)
 }

@@ -1,9 +1,12 @@
 package volunteer_service
 
 import (
+	"fmt"
 	"github.com/voluntariado-ucc-ing/volunteer_api/clients"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/auth"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
+	"github.com/voluntariado-ucc-ing/volunteer_api/utils"
 	"math/rand"
 	"time"
 )
@@ -11,12 +14,14 @@ import (
 type volunteerService struct{}
 
 type volunteerServiceInterface interface {
+	ValidateAuth(authRequest auth.Credentials) apierrors.ApiError
 	CreateVolunteer(volunteer *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError)
 	GetVolunteer(id int64) (*volunteer.Volunteer, apierrors.ApiError)
 	UpdateVolunteer(volunteer *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError)
 	DeleteVolunteer(id int64) apierrors.ApiError
 	GetAllVolunteers() ([]volunteer.Volunteer, apierrors.ApiError)
 	GetVolunteerByUsername(username string) (*volunteer.Volunteer, apierrors.ApiError)
+	UpdatePassword(credentials auth.Credentials) apierrors.ApiError
 }
 
 var (
@@ -29,18 +34,26 @@ func init() {
 }
 
 func (v volunteerService) CreateVolunteer(volunteer *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
+	generatedPassword := fmt.Sprintf("%d", rand.Uint32())
+	fmt.Println("Password: ", generatedPassword)
+	hashedPassword, hashErr := utils.HashPassword(generatedPassword)
+	if hashErr != nil {
+		return nil, apierrors.NewInternalServerApiError("Error creating password", hashErr)
+	}
+	volunteer.Password = hashedPassword
 	id, err := clients.InsertVolunteer(volunteer)
 	if err != nil {
 		return nil, err
 	}
 	volunteer.Id = id
+
 	/* TODO async
-	password := rand.Uint64()
-	err = providers.SendMail(volunteer.Username, fmt.Sprintf("%d", password))
+	err = providers.SendMail(volunteer.Username, generatedPassword)
 	if err != nil {
 		return nil, err
 	}
 	*/
+
 	return volunteer, nil
 }
 
@@ -133,4 +146,23 @@ func (v volunteerService) DeleteVolunteer(id int64) apierrors.ApiError {
 		return err
 	}
 	return nil
+}
+
+func (v volunteerService) ValidateAuth(authRequest auth.Credentials) apierrors.ApiError {
+	hashedPass, err := clients.GetHashedPasswordByUsername(authRequest.Username)
+	if err != nil {
+		return err
+	}
+	if utils.CheckPasswordHash(authRequest.Password, hashedPass) {
+		return nil
+	}
+	return apierrors.NewForbiddenApiError("Forbidden. Incorrect username or password")
+}
+
+func (v volunteerService) UpdatePassword(credentials auth.Credentials) apierrors.ApiError {
+	hashedPass, err := utils.HashPassword(credentials.Password)
+	if err != nil {
+		return apierrors.NewInternalServerApiError("Error hashing password", err)
+	}
+	return clients.UpdatePassword(hashedPass, credentials.Username)
 }
