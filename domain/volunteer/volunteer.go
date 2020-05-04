@@ -1,6 +1,9 @@
 package volunteer
 
-import "database/sql"
+import (
+	"database/sql"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
+)
 
 const (
 	StatusDeleted = "deleted"
@@ -17,6 +20,11 @@ type Volunteer struct {
 	VolunteerDetails   Details       `json:"details"`
 	VolunteerProfileId sql.NullInt64 `json:"-"`
 	Password           string        `json:"-"`
+}
+
+type VolunteerConcurrent struct {
+	Volunteer *Volunteer
+	Error apierrors.ApiError
 }
 
 func (v *Volunteer) UpdateFields(newVol Volunteer) {

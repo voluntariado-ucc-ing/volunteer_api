@@ -122,15 +122,28 @@ func (v volunteerService) GetAllVolunteers() ([]volunteer.Volunteer, apierrors.A
 		return nil, err
 	}
 
+	input := make(chan volunteer.VolunteerConcurrent)
+	defer close(input)
 	for _, id := range ids {
-		v, err := v.GetVolunteer(id)
-		if err != nil {
-			return nil, err
+		go v.getConcurrentVolunteer(id, input)
+	}
+
+	for i := 0; i < len(ids); i++ {
+		result := <- input
+		if result.Error != nil {
+			return nil, result.Error
 		}
-		res = append(res, *v)
+		res = append(res, *result.Volunteer)
 	}
 
 	return res, nil
+}
+
+func (v volunteerService) getConcurrentVolunteer(id int64, output chan volunteer.VolunteerConcurrent) {
+	vol, err := v.GetVolunteer(id)
+	output <- volunteer.VolunteerConcurrent{Volunteer: vol, Error: err}
+	return
+
 }
 
 func (v volunteerService) GetVolunteerByUsername(username string) (*volunteer.Volunteer, apierrors.ApiError) {
@@ -160,7 +173,11 @@ func (v volunteerService) ValidateAuth(authRequest auth.Credentials) apierrors.A
 }
 
 func (v volunteerService) UpdatePassword(credentials auth.Credentials) apierrors.ApiError {
-	hashedPass, err := utils.HashPassword(credentials.Password)
+	if err := v.ValidateAuth(credentials); err != nil { // Validate if old password is right
+		return err
+	}
+
+	hashedPass, err := utils.HashPassword(credentials.NewPassword)
 	if err != nil {
 		return apierrors.NewInternalServerApiError("Error hashing password", err)
 	}
