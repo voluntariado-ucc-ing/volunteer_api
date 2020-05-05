@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"github.com/gin-gonic/gin"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/auth"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
 	volunteerservice "github.com/voluntariado-ucc-ing/volunteer_api/services/volunteer"
 	"io"
@@ -22,9 +23,11 @@ type volunteerControllerInterface interface {
 	Get(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
+	AuthVolunteer(c *gin.Context)
 	ImportCsv(c *gin.Context)
 	GetByUsername(c *gin.Context)
 	GetAllVolunteers(c *gin.Context)
+	UpdatePassword(c *gin.Context)
 }
 
 type volunteerController struct{}
@@ -173,3 +176,33 @@ func (v *volunteerController) GetAllVolunteers(c *gin.Context) {
 	return
 }
 
+func (v *volunteerController) AuthVolunteer(c *gin.Context) {
+	var authRequest auth.Credentials
+	if err := c.ShouldBindJSON(&authRequest); err != nil {
+		apiErr := apierrors.NewBadRequestApiError("Error invalid JSON")
+		c.JSON(http.StatusBadRequest, apiErr)
+		return
+	}
+	err := volunteerservice.VolunteerService.ValidateAuth(authRequest)
+	if err != nil {
+		c.JSON(err.Status(), err)
+		return
+	}
+	c.Status(http.StatusAccepted)
+	return
+}
+
+func (v *volunteerController) UpdatePassword(c *gin.Context) {
+	var authRequest auth.Credentials
+	if err := c.ShouldBindJSON(&authRequest); err != nil {
+		apiErr := apierrors.NewBadRequestApiError("Error invalid JSON")
+		c.JSON(http.StatusBadRequest, apiErr)
+		return
+	}
+	err := volunteerservice.VolunteerService.UpdatePassword(authRequest)
+	if err != nil {
+		c.JSON(err.Status(), err)
+		return
+	}
+	c.JSON(http.StatusOK, map[string]string{"status": "updated"})
+}

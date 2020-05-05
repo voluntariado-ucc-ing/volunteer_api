@@ -17,7 +17,7 @@ const (
 	queryGetAllVolunteers        = "SELECT v.volunteer_id FROM voluntariado_ing.volunteers v WHERE v.volunteer_id IS NOT NULL"
 	queryGetFullVolunteerDetails = "SELECT v.volunteer_id, v.username, v.first_name, v.last_name, v.document_id, v.status, vd.volunteer_details_id, vd.contact_mail,vd.phone_number, vd.photo_url, vd.birth_date, vd.has_car, vd.university, vd.career, vd.career_year, vd.works, vd.career_condition,d.direction_id, d.street, d.number, d.details, d.city, d.postal_code FROM voluntariado_ing.volunteers v INNER JOIN voluntariado_ing.volunteer_details vd ON v.profile_id=vd.volunteer_details_id INNER JOIN  voluntariado_ing.directions d ON vd.direction_id = d.direction_id WHERE v.volunteer_id=$1"
 	queryInsertDirection         = "INSERT INTO voluntariado_ing.directions (street, number, details, city, postal_code) VALUES ($1,$2,$3,$4,$5) RETURNING direction_id"
-	queryInsertVolunteer         = "INSERT INTO voluntariado_ing.volunteers (first_name, last_name, username, document_id) VALUES ($1,$2,$3,$4) RETURNING volunteer_id"
+	queryInsertVolunteer         = "INSERT INTO voluntariado_ing.volunteers (first_name, last_name, username, document_id, password) VALUES ($1,$2,$3,$4,$5) RETURNING volunteer_id"
 	queryInsertDetails           = "INSERT INTO voluntariado_ing.volunteer_details (contact_mail, phone_number, photo_url, birth_date, has_car, direction_id, university, career, career_year, works, career_condition) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING volunteer_details_id"
 	queryGetById                 = "SELECT v.volunteer_id, v.first_name, v.last_name, v.document_id, v.username, v.status, v.profile_id FROM voluntariado_ing.volunteers v WHERE v.volunteer_id=$1 "
 	queryGetByUsername           = "SELECT v.volunteer_id FROM voluntariado_ing.volunteers v WHERE v.username=$1 "
@@ -27,6 +27,8 @@ const (
 	queryUpdateDetails           = "UPDATE voluntariado_ing.volunteer_details v SET contact_mail=$1, phone_number=$2, photo_url=$3, has_car=$4, university=$5, career=$6, career_year=$7, career_condition=$8, works=$9 WHERE v.volunteer_details_id=$10"
 	queryUpdateDirections        = "UPDATE voluntariado_ing.directions d SET street=$1, number=$2, details=$3, city=$4, postal_code=$5 WHERE d.direction_id=$6"
 	queryDelete                  = "UPDATE voluntariado_ing.volunteers v SET status=$1 WHERE v.volunteer_id=$2"
+	queryGetHashedPassword       = "SELECT v.password FROM voluntariado_ing.volunteers v WHERE v.username=$1"
+	queryUpdateHashedPassword    = "UPDATE voluntariado_ing.volunteers v SET password=$1 WHERE v.username=$2"
 )
 
 func init() {
@@ -53,7 +55,7 @@ func InsertVolunteer(vol *volunteer.Volunteer) (int64, apierrors.ApiError) {
 	if err != nil {
 		return 0, apierrors.NewInternalServerApiError("Error preparing insert statement", err)
 	}
-	res := q.QueryRow(vol.FirstName, vol.LastName, vol.Username, vol.DocumentId)
+	res := q.QueryRow(vol.FirstName, vol.LastName, vol.Username, vol.DocumentId, vol.Password)
 	err = res.Scan(&id)
 	if err != nil {
 		return 0, apierrors.NewInternalServerApiError("Error scaning last insert id for create", err)
@@ -175,6 +177,13 @@ func UpdateVolunteerTable(vol *volunteer.Volunteer) apierrors.ApiError {
 	return nil
 }
 
+func UpdatePassword(hashedPass, username string) apierrors.ApiError {
+	if _, err := dbClient.Exec(queryUpdateHashedPassword, hashedPass, username); err != nil {
+		return apierrors.NewInternalServerApiError("Error database query response for update password", err)
+	}
+	return nil
+}
+
 func UpdateVolunteerTableHavingProfileId(vol *volunteer.Volunteer) apierrors.ApiError {
 	if _, err := dbClient.Exec(queryUpdateHavingProfile, vol.FirstName, vol.LastName, vol.Username, vol.DocumentId, vol.Status, vol.Id); err != nil {
 		return apierrors.NewInternalServerApiError("Error database query response for update", err)
@@ -210,6 +219,22 @@ func GetIdByMail(username string) (int64, apierrors.ApiError) {
 	}
 
 	return volId, nil
+}
+
+func GetHashedPasswordByUsername(username string) (string, apierrors.ApiError) {
+	var hashedPassword string
+	q, err := dbClient.Prepare(queryGetHashedPassword)
+	if err != nil {
+		return "", apierrors.NewInternalServerApiError("Error preparing get full details statement", err)
+	}
+	res := q.QueryRow(username)
+	err = res.Scan(&hashedPassword)
+	if err != nil {
+		fmt.Println(err)
+		return "", apierrors.NewNotFoundApiError("username not found")
+	}
+
+	return hashedPassword, nil
 }
 
 func DeleteVolunteer(id int64) apierrors.ApiError {
