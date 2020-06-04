@@ -5,6 +5,7 @@ import (
 	"github.com/voluntariado-ucc-ing/volunteer_api/clients"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/auth"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/medical_info"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
 	"github.com/voluntariado-ucc-ing/volunteer_api/utils"
 	"math/rand"
@@ -22,6 +23,8 @@ type volunteerServiceInterface interface {
 	GetAllVolunteers() ([]volunteer.Volunteer, apierrors.ApiError)
 	GetVolunteerByUsername(username string) (*volunteer.Volunteer, apierrors.ApiError)
 	UpdatePassword(credentials auth.Credentials) apierrors.ApiError
+	SetMedicalInfo(volunteerId int64, info medical_info.MedicalInfo) apierrors.ApiError
+	GetMedicalInfo(volunteerId int64) ([]byte, apierrors.ApiError)
 }
 
 var (
@@ -183,4 +186,17 @@ func (v volunteerService) UpdatePassword(credentials auth.Credentials) apierrors
 		return apierrors.NewInternalServerApiError("Error hashing password", err)
 	}
 	return clients.UpdatePassword(hashedPass, credentials.Username)
+}
+
+func (v volunteerService) SetMedicalInfo(volunteerId int64, info medical_info.MedicalInfo) apierrors.ApiError {
+	return clients.InsertMedicalInfo(volunteerId, info)
+}
+
+func (v volunteerService) GetMedicalInfo(volunteerId int64) ([]byte, apierrors.ApiError) {
+	data, err := clients.GetVolunteerMedicalInfoById(volunteerId)
+	if err != nil {
+		return nil, err
+	}
+	// Returning []byte instead of medical info struct to avoid signature changes related errors
+	return []byte(*data), nil
 }

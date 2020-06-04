@@ -2,11 +2,13 @@ package clients
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/voluntariado-ucc-ing/volunteer_api/config"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/direction"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/medical_info"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
 	"log"
 )
@@ -14,21 +16,24 @@ import (
 var dbClient *sql.DB
 
 const (
-	queryGetAllVolunteers        = "SELECT v.volunteer_id FROM voluntariado_ing.volunteers v WHERE v.volunteer_id IS NOT NULL"
-	queryGetFullVolunteerDetails = "SELECT v.volunteer_id, v.username, v.first_name, v.last_name, v.document_id, v.status, vd.volunteer_details_id, vd.contact_mail,vd.phone_number, vd.photo_url, vd.birth_date, vd.has_car, vd.university, vd.career, vd.career_year, vd.works, vd.career_condition,d.direction_id, d.street, d.number, d.details, d.city, d.postal_code FROM voluntariado_ing.volunteers v INNER JOIN voluntariado_ing.volunteer_details vd ON v.profile_id=vd.volunteer_details_id INNER JOIN  voluntariado_ing.directions d ON vd.direction_id = d.direction_id WHERE v.volunteer_id=$1"
-	queryInsertDirection         = "INSERT INTO voluntariado_ing.directions (street, number, details, city, postal_code) VALUES ($1,$2,$3,$4,$5) RETURNING direction_id"
-	queryInsertVolunteer         = "INSERT INTO voluntariado_ing.volunteers (first_name, last_name, username, document_id, password) VALUES ($1,$2,$3,$4,$5) RETURNING volunteer_id"
-	queryInsertDetails           = "INSERT INTO voluntariado_ing.volunteer_details (contact_mail, phone_number, photo_url, birth_date, has_car, direction_id, university, career, career_year, works, career_condition) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING volunteer_details_id"
-	queryGetById                 = "SELECT v.volunteer_id, v.first_name, v.last_name, v.document_id, v.username, v.status, v.profile_id FROM voluntariado_ing.volunteers v WHERE v.volunteer_id=$1 "
-	queryGetByUsername           = "SELECT v.volunteer_id FROM voluntariado_ing.volunteers v WHERE v.username=$1 "
-	queryGetDirectionId          = "SELECT v.direction_id FROM voluntariado_ing.volunteer_details v WHERE v.volunteer_details_id=$1"
-	queryUpdate                  = "UPDATE voluntariado_ing.volunteers v SET first_name=$1, last_name=$2, username=$3, document_id=$4,status=$5,profile_id=$6 WHERE v.volunteer_id=$7"
-	queryUpdateHavingProfile     = "UPDATE voluntariado_ing.volunteers v SET first_name=$1, last_name=$2, username=$3, document_id=$4,status=$5 WHERE v.volunteer_id=$6"
-	queryUpdateDetails           = "UPDATE voluntariado_ing.volunteer_details v SET contact_mail=$1, phone_number=$2, photo_url=$3, has_car=$4, university=$5, career=$6, career_year=$7, career_condition=$8, works=$9 WHERE v.volunteer_details_id=$10"
-	queryUpdateDirections        = "UPDATE voluntariado_ing.directions d SET street=$1, number=$2, details=$3, city=$4, postal_code=$5 WHERE d.direction_id=$6"
-	queryDelete                  = "UPDATE voluntariado_ing.volunteers v SET status=$1 WHERE v.volunteer_id=$2"
-	queryGetHashedPassword       = "SELECT v.password FROM voluntariado_ing.volunteers v WHERE v.username=$1"
-	queryUpdateHashedPassword    = "UPDATE voluntariado_ing.volunteers v SET password=$1 WHERE v.username=$2"
+	queryGetAllVolunteers           = "SELECT v.volunteer_id FROM voluntariado_ing.volunteers v WHERE v.volunteer_id IS NOT NULL"
+	queryGetFullVolunteerDetails    = "SELECT v.volunteer_id, v.username, v.first_name, v.last_name, v.document_id, v.status, vd.volunteer_details_id, vd.contact_mail,vd.phone_number, vd.photo_url, vd.birth_date, vd.has_car, vd.university, vd.career, vd.career_year, vd.works, vd.career_condition,d.direction_id, d.street, d.number, d.details, d.city, d.postal_code FROM voluntariado_ing.volunteers v INNER JOIN voluntariado_ing.volunteer_details vd ON v.profile_id=vd.volunteer_details_id INNER JOIN  voluntariado_ing.directions d ON vd.direction_id = d.direction_id WHERE v.volunteer_id=$1"
+	queryInsertDirection            = "INSERT INTO voluntariado_ing.directions (street, number, details, city, postal_code) VALUES ($1,$2,$3,$4,$5) RETURNING direction_id"
+	queryInsertVolunteer            = "INSERT INTO voluntariado_ing.volunteers (first_name, last_name, username, document_id, password) VALUES ($1,$2,$3,$4,$5) RETURNING volunteer_id"
+	queryInsertDetails              = "INSERT INTO voluntariado_ing.volunteer_details (contact_mail, phone_number, photo_url, birth_date, has_car, direction_id, university, career, career_year, works, career_condition) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING volunteer_details_id"
+	queryGetById                    = "SELECT v.volunteer_id, v.first_name, v.last_name, v.document_id, v.username, v.status, v.profile_id FROM voluntariado_ing.volunteers v WHERE v.volunteer_id=$1 "
+	queryGetByUsername              = "SELECT v.volunteer_id FROM voluntariado_ing.volunteers v WHERE v.username=$1 "
+	queryGetDirectionId             = "SELECT v.direction_id FROM voluntariado_ing.volunteer_details v WHERE v.volunteer_details_id=$1"
+	queryUpdate                     = "UPDATE voluntariado_ing.volunteers v SET first_name=$1, last_name=$2, username=$3, document_id=$4,status=$5,profile_id=$6 WHERE v.volunteer_id=$7"
+	queryUpdateHavingProfile        = "UPDATE voluntariado_ing.volunteers v SET first_name=$1, last_name=$2, username=$3, document_id=$4,status=$5 WHERE v.volunteer_id=$6"
+	queryUpdateDetails              = "UPDATE voluntariado_ing.volunteer_details v SET contact_mail=$1, phone_number=$2, photo_url=$3, has_car=$4, university=$5, career=$6, career_year=$7, career_condition=$8, works=$9 WHERE v.volunteer_details_id=$10"
+	queryUpdateDirections           = "UPDATE voluntariado_ing.directions d SET street=$1, number=$2, details=$3, city=$4, postal_code=$5 WHERE d.direction_id=$6"
+	queryDelete                     = "UPDATE voluntariado_ing.volunteers v SET status=$1 WHERE v.volunteer_id=$2"
+	queryGetHashedPassword          = "SELECT v.password FROM voluntariado_ing.volunteers v WHERE v.username=$1"
+	queryUpdateHashedPassword       = "UPDATE voluntariado_ing.volunteers v SET password=$1 WHERE v.username=$2"
+	queryInsertMedicalInfo          = "INSERT INTO voluntariado_ing.medical_info (data) VALUES ($1) RETURNING medical_info_id"
+	queryUpdateMedicalIdToVolunteer = "UPDATE voluntariado_ing.volunteers v SET medical_info_id=$1 WHERE v.volunteer_id=$2"
+	queryGetMedicalInfo             = "SELECT m.data FROM voluntariado_ing.medical_info m WHERE m.medical_info_id = (SELECT v.medical_info_id FROM voluntariado_ing.volunteers v WHERE v.volunteer_id = $1)"
 )
 
 func init() {
@@ -242,4 +247,40 @@ func DeleteVolunteer(id int64) apierrors.ApiError {
 		return apierrors.NewInternalServerApiError("Error database query response for logical delete", err)
 	}
 	return nil
+}
+
+func InsertMedicalInfo(volunteerId int64, info medical_info.MedicalInfo) apierrors.ApiError {
+	bytes, _ := json.Marshal(info)
+	var id int64
+	q, err := dbClient.Prepare(queryInsertMedicalInfo)
+	if err != nil {
+		return apierrors.NewInternalServerApiError("Error preparing insert statement", err)
+	}
+	res := q.QueryRow(string(bytes))
+	if err := res.Scan(&id); err != nil {
+		return apierrors.NewInternalServerApiError("Error scanning id", err)
+	}
+
+	q, err = dbClient.Prepare(queryUpdateMedicalIdToVolunteer)
+	if err != nil {
+		return apierrors.NewInternalServerApiError("Error preparing insert statement", err)
+	}
+	q.QueryRow(id, volunteerId)
+
+	return nil
+}
+
+func GetVolunteerMedicalInfoById(id int64) (*string, apierrors.ApiError) {
+	var data string
+	q, err := dbClient.Prepare(queryGetMedicalInfo)
+	if err != nil {
+		return nil, apierrors.NewInternalServerApiError("Error preparing get full details statement", err)
+	}
+	res := q.QueryRow(id)
+	err = res.Scan(&data)
+	if err != nil {
+		fmt.Println(err)
+		return nil, apierrors.NewNotFoundApiError("volunteer medical info details not found (no medical info id)")
+	}
+	return &data, nil
 }

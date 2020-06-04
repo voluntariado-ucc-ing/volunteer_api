@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/auth"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/medical_info"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
 	volunteerservice "github.com/voluntariado-ucc-ing/volunteer_api/services/volunteer"
 	"io"
@@ -210,9 +211,37 @@ func (v *volunteerController) UpdatePassword(c *gin.Context) {
 }
 
 func (v *volunteerController) SetMedicalInfo(c *gin.Context) {
-
+	var medicalRequest medical_info.MedicalInfo
+	if err := c.ShouldBindJSON(&medicalRequest); err != nil {
+		apiErr := apierrors.NewBadRequestApiError("Error invalid JSON")
+		c.JSON(http.StatusBadRequest, apiErr)
+		return
+	}
+	volId, err := strconv.ParseInt(c.Param("volunteer_id"), 10, 64)
+	if err != nil {
+		apiErr := apierrors.NewBadRequestApiError("Error invalid volunteer id")
+		c.JSON(http.StatusBadRequest, apiErr)
+		return
+	}
+	servErr := volunteerservice.VolunteerService.SetMedicalInfo(volId, medicalRequest)
+	if servErr != nil {
+		c.JSON(servErr.Status(), servErr)
+		return
+	}
+	c.JSON(http.StatusOK, medicalRequest)
 }
 
 func (v *volunteerController) GetMedicalInfo(c *gin.Context) {
-
+	volId, err := strconv.ParseInt(c.Param("volunteer_id"), 10, 64)
+	if err != nil {
+		apiErr := apierrors.NewBadRequestApiError("Error invalid volunteer id")
+		c.JSON(http.StatusBadRequest, apiErr)
+		return
+	}
+	med, medErr := volunteerservice.VolunteerService.GetMedicalInfo(volId)
+	if medErr != nil {
+		c.JSON(medErr.Status(), medErr)
+		return
+	}
+	c.Data(http.StatusOK, "application/json", med)
 }

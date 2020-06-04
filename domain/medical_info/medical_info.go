@@ -18,6 +18,7 @@ type MedicalInfo struct {
 	AlergicToMedicine           bool     `json:"has_alergie_to_medicine"`
 	AlergicMedicineType         string   `json:"alergic_medicine_type"`
 	HeartDesease                bool     `json:"has_heart_desease"`
+	HeartDeseaseType            string   `json:"heart_desease"`
 	Hypertension                bool     `json:"has_hypertension"`
 	Lipothymy                   bool     `json:"has_lipothymy"`
 	NeuroDesease                bool     `json:"has_neuro_desease"`
@@ -33,6 +34,11 @@ type MedicalInfo struct {
 	CoagulationDisorder         bool     `json:"has_coagulation_desorder"`
 	Smokes                      bool     `json:"smokes"`
 	FoodIntolerances            bool     `json:"has_food_intolerances"`
-	FoodIntolerancesType        bool     `json:"food_intolerances"`
+	FoodIntolerancesType        string   `json:"food_intolerances"`
 	Comentaries                 string   `json:"others"`
+}
+
+type VolunteerMedicalInfo struct {
+	VolunteerId int64 `json:"volunteer_id"`
+	MedicalInfo
 }
