@@ -7,10 +7,13 @@ func mapUrls(){
 	router.GET("/volunteer/get/:id", controllers.VolunteerController.Get)
 	router.GET("/volunteer/get", controllers.VolunteerController.GetByUsername)
 	router.GET("/volunteer/all", controllers.VolunteerController.GetAllVolunteers)
+	router.GET("/volunteer/medical_info/:volunteer_id", controllers.VolunteerController.GetMedicalInfo)
+
 
 
 	router.POST("/volunteer/create", controllers.VolunteerController.Create)
 	router.POST("/volunteer/import", controllers.VolunteerController.ImportCsv)
+	router.POST("/volunteer/medical_info/:volunteer_id", controllers.VolunteerController.SetMedicalInfo)
 	router.POST("/volunteer/auth", controllers.VolunteerController.AuthVolunteer)
 
 

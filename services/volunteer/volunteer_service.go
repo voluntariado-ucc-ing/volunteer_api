@@ -33,28 +33,25 @@ func init() {
 	VolunteerService = &volunteerService{}
 }
 
-func (v volunteerService) CreateVolunteer(volunteer *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
+func (v volunteerService) CreateVolunteer(vol *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
 	generatedPassword := fmt.Sprintf("%d", rand.Uint32())
-	fmt.Println("Password: ", generatedPassword)
+
 	hashedPassword, hashErr := utils.HashPassword(generatedPassword)
 	if hashErr != nil {
 		return nil, apierrors.NewInternalServerApiError("Error creating password", hashErr)
 	}
-	volunteer.Password = hashedPassword
-	id, err := clients.InsertVolunteer(volunteer)
+
+	vol.Password = hashedPassword
+	id, err := clients.InsertVolunteer(vol)
 	if err != nil {
 		return nil, err
 	}
-	volunteer.Id = id
 
-	/* TODO async
-	err = providers.SendMail(volunteer.Username, generatedPassword)
-	if err != nil {
-		return nil, err
-	}
-	*/
+	vol.Id = id
 
-	return volunteer, nil
+	// TODO SEND MAIL
+
+	return vol, nil
 }
 
 func (v volunteerService) GetVolunteer(id int64) (*volunteer.Volunteer, apierrors.ApiError) {
@@ -62,9 +59,11 @@ func (v volunteerService) GetVolunteer(id int64) (*volunteer.Volunteer, apierror
 	if err != nil {
 		return nil, err
 	}
+
 	if res.VolunteerProfileId.Int64 == 0 { // Case doesnt have full details yet.
 		return res, nil
 	}
+
 	return clients.GetVolunteerFullDetailsById(id)
 }
 
@@ -73,6 +72,7 @@ func (v volunteerService) UpdateVolunteer(updateRequest *volunteer.Volunteer) (*
 	if err != nil {
 		return nil, err
 	}
+
 	current.UpdateFields(*updateRequest)
 	if current.VolunteerProfileId.Int64 == 0 {
 		// User doesnt have direction in details, so create it
@@ -112,6 +112,7 @@ func (v volunteerService) UpdateVolunteer(updateRequest *volunteer.Volunteer) (*
 			return nil, err
 		}
 	}
+
 	return current, nil
 }
 
@@ -129,7 +130,7 @@ func (v volunteerService) GetAllVolunteers() ([]volunteer.Volunteer, apierrors.A
 	}
 
 	for i := 0; i < len(ids); i++ {
-		result := <- input
+		result := <-input
 		if result.Error != nil {
 			return nil, result.Error
 		}

@@ -10,21 +10,21 @@ const (
 )
 
 type Volunteer struct {
-	Id                 int64         `json:"volunteer_id,omitempty"`
-	FirstName          string        `json:"first_name"`
-	LastName           string        `json:"last_name"`
-	Username           string        `json:"username"`
-	DocumentId         int64         `json:"document_id"`
-	Status             int32         `json:"status"`
-	StatusId           sql.NullInt32 `json:"-"`
-	VolunteerDetails   Details       `json:"details"`
-	VolunteerProfileId sql.NullInt64 `json:"-"`
-	Password           string        `json:"-"`
+	Id                   int64         `json:"volunteer_id,omitempty"`
+	FirstName            string        `json:"first_name"`
+	LastName             string        `json:"last_name"`
+	Username             string        `json:"username"`
+	DocumentId           int64         `json:"document_id"`
+	Status               int32         `json:"status"`
+	StatusId             sql.NullInt32 `json:"-"`
+	VolunteerDetails     Details       `json:"details"`
+	VolunteerProfileId   sql.NullInt64 `json:"-"`
+	Password             string        `json:"-"`
 }
 
 type VolunteerConcurrent struct {
 	Volunteer *Volunteer
-	Error apierrors.ApiError
+	Error     apierrors.ApiError
 }
 
 func (v *Volunteer) UpdateFields(newVol Volunteer) {

@@ -28,6 +28,8 @@ type volunteerControllerInterface interface {
 	GetByUsername(c *gin.Context)
 	GetAllVolunteers(c *gin.Context)
 	UpdatePassword(c *gin.Context)
+	SetMedicalInfo(c *gin.Context)
+	GetMedicalInfo(c *gin.Context)
 }
 
 type volunteerController struct{}
@@ -205,4 +207,12 @@ func (v *volunteerController) UpdatePassword(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, map[string]string{"status": "updated"})
+}
+
+func (v *volunteerController) SetMedicalInfo(c *gin.Context) {
+
+}
+
+func (v *volunteerController) GetMedicalInfo(c *gin.Context) {
+
 }
