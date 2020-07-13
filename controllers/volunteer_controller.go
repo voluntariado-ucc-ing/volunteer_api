@@ -147,14 +147,21 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 		newVolunteers = append(newVolunteers, v)
 	}
 
-	for _, newVolunteer := range newVolunteers {
-		_, err := volunteerservice.VolunteerService.CreateVolunteer(&newVolunteer)
+	for index := range newVolunteers {
+		_, err := volunteerservice.VolunteerService.CreateVolunteer(&newVolunteers[index])
 		if err != nil {
 			internal := apierrors.NewInternalServerApiError("Error creating user from file", err)
 			c.JSON(internal.Status(), internal)
 			return
 		}
 	}
+
+	mailErr := volunteerservice.VolunteerService.SendMail(newVolunteers)
+	if mailErr != nil {
+		c.JSON(mailErr.Status(), mailErr)
+		return
+	}
+
 	c.JSON(http.StatusOK, map[string]string{"status": "created"})
 }
 

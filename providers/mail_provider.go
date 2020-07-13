@@ -1,29 +1,30 @@
 package providers
 
 import (
+	"errors"
 	"fmt"
-	"github.com/voluntariado-ucc-ing/volunteer_api/config"
+	"github.com/mercadolibre/golang-restclient/rest"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
-	"net/smtp"
+	"github.com/voluntariado-ucc-ing/volunteer_api/domain/auth"
+	"time"
 )
 
-var auth smtp.Auth
 
-func init() {
-	mail, pass := config.GetMailCredentials()
-	auth = smtp.PlainAuth("", mail, pass, config.SmtpHost)
+var rb = rest.RequestBuilder{
+	Timeout:             500 * time.Millisecond,
+	BaseURL:             "172.17.0.3:3000",
+	ContentType:         rest.JSON,
 }
 
-func SendMail(emailAddress string, password string) apierrors.ApiError {
-	err := smtp.SendMail(
-		config.SmtpAddress,
-		auth,
-		"noreply@voluntariadoing.org",
-		[]string{emailAddress},
-		[]byte(fmt.Sprintf("Hola, fuiste aceptado en el voluntariado de UCC Ingenieria, tu clave de acceso es %s", password)),
-	)
-	if err != nil {
-		return apierrors.NewInternalServerApiError(fmt.Sprintf("Error while trying to mail %s", emailAddress), err)
+func PostMail(r auth.MailRequest) apierrors.ApiError {
+	response := rb.Post("/send/volunteers", r)
+	if response == nil || response.Response == nil {
+		return apierrors.NewInternalServerApiError("Error restclient posting mail to mail api", errors.New("error restclient"))
 	}
+	if response.StatusCode > 399 {
+		error := errors.New(response.String())
+		return apierrors.NewInternalServerApiError("Error posting mail", error)
+	}
+	fmt.Println("successfully sent mail for users")
 	return nil
 }

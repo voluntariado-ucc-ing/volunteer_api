@@ -7,6 +7,7 @@ import (
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/auth"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/medical_info"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
+	"github.com/voluntariado-ucc-ing/volunteer_api/providers"
 	"github.com/voluntariado-ucc-ing/volunteer_api/utils"
 	"math/rand"
 	"time"
@@ -25,6 +26,7 @@ type volunteerServiceInterface interface {
 	UpdatePassword(credentials auth.Credentials) apierrors.ApiError
 	SetMedicalInfo(volunteerId int64, info medical_info.MedicalInfo) apierrors.ApiError
 	GetMedicalInfo(volunteerId int64) ([]byte, apierrors.ApiError)
+	SendMail([]volunteer.Volunteer) (apierrors.ApiError)
 }
 
 var (
@@ -51,8 +53,6 @@ func (v volunteerService) CreateVolunteer(vol *volunteer.Volunteer) (*volunteer.
 	}
 
 	vol.Id = id
-
-	// TODO SEND MAIL
 
 	return vol, nil
 }
@@ -199,4 +199,16 @@ func (v volunteerService) GetMedicalInfo(volunteerId int64) ([]byte, apierrors.A
 	}
 	// Returning []byte instead of medical info struct to avoid signature changes related errors
 	return []byte(*data), nil
+}
+
+func (v volunteerService) SendMail(newVolunteers []volunteer.Volunteer) apierrors.ApiError {
+	var mailRequest auth.MailRequest
+	for index := range newVolunteers {
+		mailRequest.Volunteers = append(mailRequest.Volunteers, auth.MailCredentials{
+			Mail: newVolunteers[index].Username,
+			Pass: newVolunteers[index].Password,
+		})
+	}
+
+	return providers.PostMail(mailRequest)
 }
