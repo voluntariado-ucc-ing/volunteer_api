@@ -38,7 +38,7 @@ const (
 
 func init() {
 	var err error
-	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s",
+	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
 		config.GetDatabaseHost(),
 		config.GetDatabaseUser(),
 		config.GetDatabasePassword(),
