@@ -40,7 +40,7 @@ func init() {
 
 func (v volunteerService) CreateVolunteer(vol *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError) {
 	generatedPassword := fmt.Sprintf("%d", rand.Uint32())
-
+	fmt.Println(generatedPassword)
 	hashedPassword, hashErr := utils.HashPassword(generatedPassword)
 	if hashErr != nil {
 		return nil, apierrors.NewInternalServerApiError("Error creating password", hashErr)
