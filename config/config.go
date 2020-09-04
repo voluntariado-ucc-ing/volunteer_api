@@ -13,7 +13,7 @@ const (
 	dbPort     = "DB_PORT"
 
 	SmtpHost    = "smtp.gmail.com"
-	SmtpAddress = "smtp.gmail.com:587"
+	SmtpAddress = "smtp.gmail.com:465"
 )
 
 var (
