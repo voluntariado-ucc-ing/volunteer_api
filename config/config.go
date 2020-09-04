@@ -17,8 +17,8 @@ const (
 )
 
 var (
-	emailAddress     = os.Getenv(address)
-	emailPassword    = os.Getenv(pass)
+	emailAddress     = "voluntariadoing.noreply@ucc.edu.ar" //os.Getenv(address)
+	emailPassword    = "ysl*gzzjic4Taok" //os.Getenv(pass)
 	databaseName     = os.Getenv(dbName)
 	databaseUser     = os.Getenv(dbUser)
 	databasePassword = os.Getenv(dbPassword)
