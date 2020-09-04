@@ -9,13 +9,7 @@ RUN go install -v ./...
 CMD ["volunteer_api"]
 
 # Database Credentials
-ENV DB_HOST=178.18.0.9
 
-ENV DB_USER=postgres
-
-ENV DB_PASS=ysl*gzzjic4Taok
-
-ENV DB_NAME=voluntariado_ing
 
 EXPOSE 8080
 
