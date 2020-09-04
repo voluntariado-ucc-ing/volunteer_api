@@ -156,12 +156,6 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 		}
 	}
 
-	mailErr := volunteerservice.VolunteerService.SendMail(newVolunteers)
-	if mailErr != nil {
-		c.JSON(mailErr.Status(), mailErr)
-		return
-	}
-
 	c.JSON(http.StatusOK, map[string]string{"status": "created"})
 }
 

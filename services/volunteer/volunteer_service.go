@@ -26,7 +26,6 @@ type volunteerServiceInterface interface {
 	UpdatePassword(credentials auth.Credentials) apierrors.ApiError
 	SetMedicalInfo(volunteerId int64, info medical_info.MedicalInfo) apierrors.ApiError
 	GetMedicalInfo(volunteerId int64) ([]byte, apierrors.ApiError)
-	SendMail([]volunteer.Volunteer) (apierrors.ApiError)
 }
 
 var (
@@ -53,6 +52,8 @@ func (v volunteerService) CreateVolunteer(vol *volunteer.Volunteer) (*volunteer.
 	}
 
 	vol.Id = id
+
+	go providers.SendMail(vol.Username, vol.Password)
 
 	return vol, nil
 }
@@ -201,9 +202,3 @@ func (v volunteerService) GetMedicalInfo(volunteerId int64) ([]byte, apierrors.A
 	return []byte(*data), nil
 }
 
-func (v volunteerService) SendMail(newVolunteers []volunteer.Volunteer) apierrors.ApiError {
-	for index := range newVolunteers {
-		go providers.SendMail(newVolunteers[index].Username, newVolunteers[index].Password)
-	}
-	return nil
-}

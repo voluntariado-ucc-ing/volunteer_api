@@ -29,5 +29,4 @@ func SendMail(emailAddress string, password string) {
 	}
 
 	fmt.Println("Successfully posted mail to user ", emailAddress)
-	return
 }
