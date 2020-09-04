@@ -53,7 +53,7 @@ func (v volunteerService) CreateVolunteer(vol *volunteer.Volunteer) (*volunteer.
 
 	vol.Id = id
 
-	go providers.SendMail(vol.Username, vol.Password)
+	go providers.SendMail(vol.Username, generatedPassword)
 
 	return vol, nil
 }
