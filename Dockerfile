@@ -12,6 +12,7 @@ CMD ["volunteer_api"]
 
 
 EXPOSE 8080
+EXPOSE 587
 
 # Commands for running in docker
 # docker build -t volunteer_api .
