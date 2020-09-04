@@ -10,6 +10,7 @@ const (
 	dbPassword = "DB_PASS"
 	dbUser     = "DB_USER"
 	dbHost     = "DB_HOST"
+	dbPort     = "DB_PORT"
 
 	SmtpHost    = "smtp.gmail.com"
 	SmtpAddress = "smtp.gmail.com:587"
@@ -22,6 +23,7 @@ var (
 	databaseUser     = os.Getenv(dbUser)
 	databasePassword = os.Getenv(dbPassword)
 	databaseHost     = os.Getenv(dbHost)
+	databasePort     = os.Getenv(dbPort)
 )
 
 func GetMailCredentials() (string, string) {
@@ -42,4 +44,8 @@ func GetDatabaseUser() string {
 
 func GetDatabasePassword() string {
 	return databasePassword
+}
+
+func GetDatabasePort() string {
+	return databasePort
 }
