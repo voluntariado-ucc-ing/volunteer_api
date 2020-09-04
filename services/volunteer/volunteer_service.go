@@ -202,13 +202,8 @@ func (v volunteerService) GetMedicalInfo(volunteerId int64) ([]byte, apierrors.A
 }
 
 func (v volunteerService) SendMail(newVolunteers []volunteer.Volunteer) apierrors.ApiError {
-	var mailRequest auth.MailRequest
 	for index := range newVolunteers {
-		mailRequest.Volunteers = append(mailRequest.Volunteers, auth.MailCredentials{
-			Mail: newVolunteers[index].Username,
-			Pass: newVolunteers[index].Password,
-		})
+		go providers.SendMail(newVolunteers[index].Username, newVolunteers[index].Password)
 	}
-
-	return providers.PostMail(mailRequest)
+	return nil
 }
