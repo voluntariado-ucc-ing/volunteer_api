@@ -16,7 +16,7 @@ import (
 type volunteerService struct{}
 
 type volunteerServiceInterface interface {
-	ValidateAuth(authRequest auth.Credentials) apierrors.ApiError
+	ValidateAuth(authRequest auth.Credentials) (*volunteer.Volunteer, apierrors.ApiError)
 	CreateVolunteer(volunteer *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError)
 	GetVolunteer(id int64) (*volunteer.Volunteer, apierrors.ApiError)
 	UpdateVolunteer(volunteer *volunteer.Volunteer) (*volunteer.Volunteer, apierrors.ApiError)
