@@ -43,9 +43,11 @@ func SetVolunteerAlreadyLoggedIn(volunteerId int64) apierrors.ApiError{
 }
 
 func GetVolunteerAlreadyLoggedIn(volunteerId int64) apierrors.ApiError {
-	_, err := Client.Get(ctx, getKey(volunteerId)).Result()
+	res, err := Client.Get(ctx, getKey(volunteerId)).Result()
 	if err != nil {
+		fmt.Println("User never logged in", err)
 		return apierrors.NewInternalServerApiError("error getting key in redis db", err)
 	}
+	fmt.Println("User already logged in", res)
 	return nil
 }
