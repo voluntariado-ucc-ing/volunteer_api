@@ -117,6 +117,10 @@ func (v volunteerService) UpdateVolunteer(updateRequest *volunteer.Volunteer) (*
 		}
 	}
 
+	if err := clients.GetVolunteerAlreadyLoggedIn(current.Id); err != nil {
+		_ = clients.SetVolunteerAlreadyLoggedIn(current.Id)
+	}
+
 	return current, nil
 }
 
@@ -148,7 +152,6 @@ func (v volunteerService) getConcurrentVolunteer(id int64, output chan volunteer
 	vol, err := v.GetVolunteer(id)
 	output <- volunteer.VolunteerConcurrent{Volunteer: vol, Error: err}
 	return
-
 }
 
 func (v volunteerService) GetVolunteerByUsername(username string) (*volunteer.Volunteer, apierrors.ApiError) {
@@ -182,7 +185,6 @@ func (v volunteerService) ValidateAuth(authRequest auth.Credentials) (*volunteer
 			t := true
 			res.HasLoggedIn = &t
 		} else {
-			_ = clients.SetVolunteerAlreadyLoggedIn(res.Id)
 			f := false
 			res.HasLoggedIn = &f
 		}
