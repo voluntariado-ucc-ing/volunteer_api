@@ -20,6 +20,7 @@ type Volunteer struct {
 	VolunteerDetails   Details       `json:"details"`
 	VolunteerProfileId sql.NullInt64 `json:"-"`
 	Password           string        `json:"-"`
+	HasLoggedIn        *bool         `json:"already_logged_in,omitempty"`
 }
 
 type VolunteerConcurrent struct {

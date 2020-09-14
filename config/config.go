@@ -12,19 +12,33 @@ const (
 	dbHost     = "DB_HOST"
 	dbPort     = "DB_PORT"
 
+	redisPort = "REDIS_PORT"
+	redisHost = "REDIS_HOST"
+
 	SmtpHost    = "smtp.gmail.com"
 	SmtpAddress = "smtp.gmail.com:465"
 )
 
 var (
 	emailAddress     = "voluntariadoing.noreply@ucc.edu.ar" //os.Getenv(address)
-	emailPassword    = "ysl*gzzjic4Taok" //os.Getenv(pass)
+	emailPassword    = "ysl*gzzjic4Taok"                    //os.Getenv(pass)
 	databaseName     = os.Getenv(dbName)
 	databaseUser     = os.Getenv(dbUser)
 	databasePassword = os.Getenv(dbPassword)
 	databaseHost     = os.Getenv(dbHost)
 	databasePort     = os.Getenv(dbPort)
+
+	redisPortValue = os.Getenv(redisPort)
+	redisHostValue = os.Getenv(redisHost)
 )
+
+func GetRedisPort() string {
+	return redisPortValue
+}
+
+func GetRedisHost() string {
+	return redisHostValue
+}
 
 func GetMailCredentials() (string, string) {
 	return emailAddress, emailPassword
