@@ -166,19 +166,34 @@ func (v volunteerService) DeleteVolunteer(id int64) apierrors.ApiError {
 	return nil
 }
 
-func (v volunteerService) ValidateAuth(authRequest auth.Credentials) apierrors.ApiError {
+func (v volunteerService) ValidateAuth(authRequest auth.Credentials) (*volunteer.Volunteer, apierrors.ApiError) {
 	hashedPass, err := clients.GetHashedPasswordByUsername(authRequest.Username)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if utils.CheckPasswordHash(authRequest.Password, hashedPass) {
-		return nil
+		res, err := v.GetVolunteerByUsername(authRequest.Username)
+		if err != nil {
+			fmt.Println(err)
+			return nil, err
+		}
+
+		if err := clients.GetVolunteerAlreadyLoggedIn(res.Id); err == nil {
+			t := true
+			res.HasLoggedIn = &t
+		} else {
+			_ = clients.SetVolunteerAlreadyLoggedIn(res.Id)
+			f := false
+			res.HasLoggedIn = &f
+		}
+
+		return res, nil
 	}
-	return apierrors.NewForbiddenApiError("Forbidden. Incorrect username or password")
+	return nil, apierrors.NewForbiddenApiError("Forbidden. Incorrect username or password")
 }
 
 func (v volunteerService) UpdatePassword(credentials auth.Credentials) apierrors.ApiError {
-	if err := v.ValidateAuth(credentials); err != nil { // Validate if old password is right
+	if _, err := v.ValidateAuth(credentials); err != nil { // Validate if old password is right
 		return err
 	}
 
@@ -201,4 +216,3 @@ func (v volunteerService) GetMedicalInfo(volunteerId int64) ([]byte, apierrors.A
 	// Returning []byte instead of medical info struct to avoid signature changes related errors
 	return []byte(*data), nil
 }
-
