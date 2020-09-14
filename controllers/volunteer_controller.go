@@ -187,12 +187,12 @@ func (v *volunteerController) AuthVolunteer(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, apiErr)
 		return
 	}
-	err := volunteerservice.VolunteerService.ValidateAuth(authRequest)
+	res, err := volunteerservice.VolunteerService.ValidateAuth(authRequest)
 	if err != nil {
 		c.JSON(err.Status(), err)
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.JSON(http.StatusAccepted, res)
 	return
 }
 
