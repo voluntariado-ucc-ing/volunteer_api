@@ -16,7 +16,7 @@ const (
 	redisHost = "REDIS_HOST"
 
 	SmtpHost    = "smtp.gmail.com"
-	SmtpAddress = "smtp.gmail.com:465"
+	SmtpAddress = "smtp.gmail.com:587"
 )
 
 var (
