@@ -18,7 +18,7 @@ func SendMail(emailAddress string, password string) {
 	msg := []byte(fmt.Sprintf("To: %s\r\n" +
 		"Subject: ¡Fuiste aceptado en Voluntariado Ingeniería UCC!\r\n" +
 		"\r\n" +
-		"¡Enhorabuena voluntario! \n Tu acceso al sistema del Voluntariado UCC fue aprobado, tu clave es %s . Apenas ingreses, podrás cambiar tu contraseña por la que desees. \n Muchas gracias.\r\n", emailAddress, password))
+		"¡Enhorabuena voluntario!\n\n\nTu acceso al sistema del Voluntariado UCC fue aprobado, tu clave es %s .\nApenas ingreses, podrás cambiar tu contraseña por la que desees.\nMuchas gracias.\r\n", emailAddress, password))
 	err := smtp.SendMail(
 		config.SmtpAddress,
 		auth,
