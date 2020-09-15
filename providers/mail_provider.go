@@ -15,13 +15,18 @@ func init() {
 }
 
 func SendMail(emailAddress string, password string) {
+	msg := []byte(fmt.Sprintf("To: %s\r\n" +
+		"Subject: ¡Fuiste aceptado en Voluntariado Ingeniería UCC!\r\n" +
+		"\r\n" +
+		"¡Enhorabuena voluntario! \n Tu acceso al sistema del Voluntariado UCC fue aprobado, tu clave es %s . Apenas ingreses, podrás cambiar tu contraseña por la que desees. \n Muchas gracias.\r\n", emailAddress, password))
 	err := smtp.SendMail(
 		config.SmtpAddress,
 		auth,
 		"voluntariadoing.noreply@ucc.edu.ar",
 		[]string{emailAddress},
-		[]byte(fmt.Sprintf("Hola, fuiste aceptado en el voluntariado de UCC Ingenieria, tu clave de acceso es %s", password)),
+		msg,
 	)
+
 	if err != nil {
 		e := apierrors.NewInternalServerApiError(fmt.Sprintf("Error while trying to mail %s and password %s", emailAddress, password), err)
 		fmt.Println(e)
