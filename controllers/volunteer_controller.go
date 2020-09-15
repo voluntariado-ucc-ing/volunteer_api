@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/csv"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/auth"
@@ -107,6 +108,7 @@ func (v *volunteerController) Delete(c *gin.Context) {
 func (v *volunteerController) ImportCsv(c *gin.Context) {
 	f, err := c.FormFile("file")
 	if err != nil {
+		fmt.Println(err)
 		badR := apierrors.NewBadRequestApiError("Error parsing file parameter")
 		c.JSON(badR.Status(), badR)
 		return
@@ -114,6 +116,7 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 
 	file, err := f.Open()
 	if err != nil {
+		fmt.Println(err)
 		internal := apierrors.NewInternalServerApiError("Error opening input file", err)
 		c.JSON(internal.Status(), internal)
 		return
@@ -130,12 +133,14 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 			break
 		}
 		if err != nil {
+			fmt.Println(err)
 			log.Fatal(err)
 		}
 		//[0] Mail
 		//[1] DNI
 		dni, err := strconv.ParseInt(strings.TrimSpace(record[1]), 10, 64)
 		if err != nil {
+			fmt.Println(err)
 			badR := apierrors.NewBadRequestApiError("Error parsing file data")
 			c.JSON(badR.Status(), badR)
 			return
@@ -150,6 +155,7 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 	for index := range newVolunteers {
 		_, err := volunteerservice.VolunteerService.CreateVolunteer(&newVolunteers[index])
 		if err != nil {
+			fmt.Println(err)
 			internal := apierrors.NewInternalServerApiError("Error creating user from file", err)
 			c.JSON(internal.Status(), internal)
 			return
