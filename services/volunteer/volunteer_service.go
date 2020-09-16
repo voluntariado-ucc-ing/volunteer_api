@@ -121,7 +121,12 @@ func (v volunteerService) UpdateVolunteer(updateRequest *volunteer.Volunteer) (*
 		_ = clients.SetVolunteerAlreadyLoggedIn(current.Id)
 	}
 
-	return current, nil
+	updated, err := v.GetVolunteer(current.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
 }
 
 func (v volunteerService) GetAllVolunteers() ([]volunteer.Volunteer, apierrors.ApiError) {
