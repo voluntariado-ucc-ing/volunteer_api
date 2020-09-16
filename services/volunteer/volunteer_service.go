@@ -10,6 +10,7 @@ import (
 	"github.com/voluntariado-ucc-ing/volunteer_api/providers"
 	"github.com/voluntariado-ucc-ing/volunteer_api/utils"
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -80,12 +81,17 @@ func (v volunteerService) UpdateVolunteer(updateRequest *volunteer.Volunteer) (*
 	current.UpdateFields(*updateRequest)
 	if current.VolunteerProfileId.Int64 == 0 {
 
+		fmt.Printf("About to parse birth date from request %s, from current %s\n", updateRequest.VolunteerDetails.BirthDate, current.VolunteerDetails.BirthDate)
 		birthDate, timeErr := time.Parse(time.RFC3339Nano, updateRequest.VolunteerDetails.BirthDate)
 		if timeErr != nil {
 			fmt.Println(timeErr)
-			return nil, apierrors.NewBadRequestApiError(timeErr.Error())
+			splitted := strings.Split(updateRequest.VolunteerDetails.BirthDate, "T")
+			if len(splitted) > 0 {
+				current.VolunteerDetails.BirthDate = splitted[0]
+			}
+		} else {
+			current.VolunteerDetails.BirthDate = fmt.Sprintf("%d-%d-%d", birthDate.Year(), birthDate.Month(), birthDate.Day())
 		}
-		current.VolunteerDetails.BirthDate = fmt.Sprintf("%d-%d-%d", birthDate.Year(), birthDate.Month(), birthDate.Day())
 
 		// User doesnt have direction in details, so create it
 		dirId, err := clients.InsertDirection(current.VolunteerDetails.Direction)
