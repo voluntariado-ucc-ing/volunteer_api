@@ -80,7 +80,7 @@ func (v volunteerService) UpdateVolunteer(updateRequest *volunteer.Volunteer) (*
 	current.UpdateFields(*updateRequest)
 	if current.VolunteerProfileId.Int64 == 0 {
 
-		birthDate, timeErr := time.Parse(time.RFC3339Nano, current.VolunteerDetails.BirthDate)
+		birthDate, timeErr := time.Parse(time.RFC3339Nano, updateRequest.VolunteerDetails.BirthDate)
 		if timeErr != nil {
 			fmt.Println(timeErr)
 			return nil, apierrors.NewBadRequestApiError(timeErr.Error())
