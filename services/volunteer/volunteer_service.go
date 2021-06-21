@@ -174,7 +174,7 @@ func (v volunteerService) getConcurrentVolunteer(id int64, output chan volunteer
 }
 
 func (v volunteerService) GetVolunteerByUsername(username string) (*volunteer.Volunteer, apierrors.ApiError) {
-	id, err := clients.GetIdByMail(username)
+	id, err := clients.GetIdbyUsername(username)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +196,6 @@ func (v volunteerService) ValidateAuth(authRequest auth.Credentials) (*volunteer
 	if utils.CheckPasswordHash(authRequest.Password, hashedPass) {
 		res, err := v.GetVolunteerByUsername(authRequest.Username)
 		if err != nil {
-			fmt.Println(err)
 			return nil, err
 		}
 

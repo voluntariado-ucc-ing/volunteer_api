@@ -211,7 +211,7 @@ func UpdateDirectionTable(dir *direction.Direction) apierrors.ApiError {
 	return nil
 }
 
-func GetIdByMail(username string) (int64, apierrors.ApiError) {
+func GetIdbyUsername(username string) (int64, apierrors.ApiError) {
 	var volId int64
 	q, err := dbClient.Prepare(queryGetByUsername)
 	if err != nil {

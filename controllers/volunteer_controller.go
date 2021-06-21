@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/auth"
+	file2 "github.com/voluntariado-ucc-ing/volunteer_api/domain/form"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/medical_info"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
 	volunteerservice "github.com/voluntariado-ucc-ing/volunteer_api/services/volunteer"
@@ -105,29 +106,36 @@ func (v *volunteerController) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]string{"status": "deleted"})
 }
 
+
 func (v *volunteerController) ImportCsv(c *gin.Context) {
-	f, err := c.FormFile("file")
+	var form file2.Form
+	//f, err := c.FormFile("form")
+
+	err := c.ShouldBind(&form)
+
 	if err != nil {
 		fmt.Println(err)
-		badR := apierrors.NewBadRequestApiError("Error parsing file parameter")
-		c.JSON(badR.Status(), badR)
+		badR := apierrors.NewBadRequestApiError("Error parsing form parameter")
+	   	c.JSON(badR.Status(), badR)
 		return
 	}
 
-	file, err := f.Open()
+
+	// Get raw file bytes - no reader method
+	openedFile, err := form.File.Open()
 	if err != nil {
 		fmt.Println(err)
-		internal := apierrors.NewInternalServerApiError("Error opening input file", err)
+		internal := apierrors.NewInternalServerApiError("Error opening input form", err)
 		c.JSON(internal.Status(), internal)
 		return
 	}
 
-	r := csv.NewReader(file)
+	r := csv.NewReader(openedFile)
 
 	var newVolunteers []volunteer.Volunteer
 
 	for {
-		// Read each record from csv
+		// Read each record from form
 		record, err := r.Read()
 		if err == io.EOF {
 			break
@@ -141,7 +149,7 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 		dni, err := strconv.ParseInt(strings.TrimSpace(record[1]), 10, 64)
 		if err != nil {
 			fmt.Println(err)
-			badR := apierrors.NewBadRequestApiError("Error parsing file data")
+			badR := apierrors.NewBadRequestApiError("Error parsing form data")
 			c.JSON(badR.Status(), badR)
 			return
 		}
@@ -156,7 +164,7 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 		_, err := volunteerservice.VolunteerService.CreateVolunteer(&newVolunteers[index])
 		if err != nil {
 			fmt.Println(err)
-			internal := apierrors.NewInternalServerApiError("Error creating user from file", err)
+			internal := apierrors.NewInternalServerApiError("Error creating user from form", err)
 			c.JSON(internal.Status(), internal)
 			return
 		}
