@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/apierrors"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/auth"
-	file2 "github.com/voluntariado-ucc-ing/volunteer_api/domain/form"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/medical_info"
 	"github.com/voluntariado-ucc-ing/volunteer_api/domain/volunteer"
 	volunteerservice "github.com/voluntariado-ucc-ing/volunteer_api/services/volunteer"
@@ -108,29 +107,22 @@ func (v *volunteerController) Delete(c *gin.Context) {
 
 
 func (v *volunteerController) ImportCsv(c *gin.Context) {
-	var form file2.Form
-	//f, err := c.FormFile("form")
-
-	err := c.ShouldBind(&form)
+	csvfile, err := c.FormFile("form")
 
 	if err != nil {
 		fmt.Println(err)
-		badR := apierrors.NewBadRequestApiError("Error parsing form parameter")
-	   	c.JSON(badR.Status(), badR)
+		badR := apierrors.NewBadRequestApiError("Error parsing file parameter")
+		c.JSON(badR.Status(), badR)
 		return
 	}
-
-
-	// Get raw file bytes - no reader method
-	openedFile, err := form.File.Open()
+	file, err := csvfile.Open()
 	if err != nil {
 		fmt.Println(err)
-		internal := apierrors.NewInternalServerApiError("Error opening input form", err)
+		internal := apierrors.NewInternalServerApiError("Error opening input file", err)
 		c.JSON(internal.Status(), internal)
 		return
 	}
-
-	r := csv.NewReader(openedFile)
+	r := csv.NewReader(file)
 
 	var newVolunteers []volunteer.Volunteer
 
@@ -149,7 +141,7 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 		dni, err := strconv.ParseInt(strings.TrimSpace(record[1]), 10, 64)
 		if err != nil {
 			fmt.Println(err)
-			badR := apierrors.NewBadRequestApiError("Error parsing form data")
+			badR := apierrors.NewBadRequestApiError("Error parsing file data")
 			c.JSON(badR.Status(), badR)
 			return
 		}
@@ -164,7 +156,7 @@ func (v *volunteerController) ImportCsv(c *gin.Context) {
 		_, err := volunteerservice.VolunteerService.CreateVolunteer(&newVolunteers[index])
 		if err != nil {
 			fmt.Println(err)
-			internal := apierrors.NewInternalServerApiError("Error creating user from form", err)
+			internal := apierrors.NewInternalServerApiError("Error creating user file form", err)
 			c.JSON(internal.Status(), internal)
 			return
 		}
